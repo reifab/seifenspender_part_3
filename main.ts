@@ -8,9 +8,10 @@ function warte_5_Sekunden_mit_Anzeige () {
 }
 let distanzSensorZuSeife = 0
 let seifenstandInProzent = 100
+let seifenstandAlt = -1
 smartfeldAktoren.oledInit(128, 64)
 smartfeldAktoren.oledClear()
-if (false) {
+if (true) {
     smartfeldAktoren.oledWriteStr("Verbinde")
     IoTCube.LoRa_Join(
     eBool.enable,
@@ -26,16 +27,18 @@ if (false) {
     smartfeldAktoren.oledWriteStr("Verbunden!")
     basic.pause(3000)
     smartfeldAktoren.oledClear()
-    IoTCube.addUnsignedInteger(eIDs.ID_0, seifenstandInProzent)
-    IoTCube.SendBufferSimple()
-    warte_5_Sekunden_mit_Anzeige()
 }
 basic.forever(function () {
     smartfeldAktoren.oledClear()
     distanzSensorZuSeife = smartfeldSensoren.measureInCentimetersV2(DigitalPin.P0)
-    smartfeldAktoren.oledWriteNum(Math.round(distanzSensorZuSeife))
-    smartfeldAktoren.oledWriteStr(" cm")
-    if (false) {
+    seifenstandInProzent = (25 - distanzSensorZuSeife) / 25 * 100
+    seifenstandInProzent = Math.round(seifenstandInProzent)
+    if (seifenstandInProzent < 0) {
+        seifenstandInProzent = 0
+    }
+    smartfeldAktoren.oledWriteNum(seifenstandInProzent)
+    smartfeldAktoren.oledWriteStr(" %")
+    if (seifenstandAlt != seifenstandInProzent) {
         IoTCube.addUnsignedInteger(eIDs.ID_0, seifenstandInProzent)
         IoTCube.SendBufferSimple()
         warte_5_Sekunden_mit_Anzeige()
@@ -43,6 +46,7 @@ basic.forever(function () {
         seifenstandInProzent,
         100
         )
+        seifenstandAlt = seifenstandInProzent
     }
     basic.pause(100)
 })
